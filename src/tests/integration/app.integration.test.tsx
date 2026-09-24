@@ -8,9 +8,9 @@ describe('App integration', () => {
 
     render(<App />);
 
-    fireEvent.change(screen.getByPlaceholderText('Écris ta demande ici...'), {
-      target: { value: 'Créer une interface React moderne' },
-    });
+    const composer = screen.getByRole('textbox', { name: 'Saisir un message' });
+    composer.textContent = 'Créer une interface React moderne';
+    fireEvent.input(composer);
 
     fireEvent.click(screen.getByRole('button', { name: 'Envoyer' }));
 

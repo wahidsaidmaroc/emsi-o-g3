@@ -320,24 +320,53 @@ h2 {
   gap: 12px;
 }
 
-.composer textarea {
+.composer-body {
   flex: 1;
+  display: grid;
+  gap: 12px;
+}
+
+.composer-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbar-button {
   border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.composer-editor {
+  min-height: 56px;
   border-radius: 20px;
+  border: 1px solid transparent;
   background: rgba(10, 14, 21, 0.78);
   color: var(--text);
   padding: 16px 18px;
-  min-height: 56px;
   max-height: 160px;
-  resize: none;
+  overflow: auto;
   outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.composer textarea::placeholder {
+.composer-editor:empty::before,
+.composer-editor[data-empty='true']::before {
+  content: attr(data-placeholder);
   color: rgba(155, 168, 184, 0.75);
+  pointer-events: none;
 }
 
-.composer textarea:focus {
+.toolbar-button:hover {
+  border-color: var(--border-strong);
+}
+
+.toolbar-button:focus-visible,
+.composer-editor:focus {
   border-color: rgba(102, 227, 196, 0.35);
   box-shadow: 0 0 0 4px rgba(102, 227, 196, 0.08);
 }
