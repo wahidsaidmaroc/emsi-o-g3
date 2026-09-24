@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useRef, useState } from 'react';
 
 type Sender = 'assistant' | 'user';
 
@@ -63,8 +63,27 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>(starterMessages);
   const [prompt, setPrompt] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const canSend = useMemo(() => prompt.trim().length > 0 && !isThinking, [prompt, isThinking]);
+
+  function syncPromptFromEditor() {
+    setPrompt(editorRef.current?.innerText ?? editorRef.current?.textContent ?? '');
+  }
+
+  function clearEditor() {
+    if (editorRef.current) {
+      editorRef.current.innerHTML = '';
+    }
+
+    setPrompt('');
+  }
+
+  function applyFormat(command: 'bold' | 'italic' | 'underline' | 'insertUnorderedList') {
+    editorRef.current?.focus();
+    document.execCommand(command, false);
+    syncPromptFromEditor();
+  }
 
   function sendMessage(content: string) {
     const nextUserMessage: Message = {
@@ -76,7 +95,7 @@ export default function App() {
 
     setMessages((current) => [...current, nextUserMessage]);
     setIsThinking(true);
-    setPrompt('');
+    clearEditor();
 
     window.setTimeout(() => {
       const assistantMessage: Message = {
@@ -182,16 +201,52 @@ export default function App() {
 
         <section className="composer-card">
           <form className="composer" onSubmit={onSubmit}>
-            <label className="sr-only" htmlFor="chat-input">
+            <label className="sr-only" id="chat-input-label">
               Saisir un message
             </label>
-            <textarea
-              id="chat-input"
-              value={prompt}
-              onChange={(event) => setPrompt(event.target.value)}
-              placeholder="Écris ta demande ici..."
-              rows={1}
-            />
+            <div className="composer-body">
+              <div className="composer-toolbar" aria-label="Outils de mise en forme">
+                <button type="button" className="toolbar-button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('bold')}>
+                  Gras
+                </button>
+                <button type="button" className="toolbar-button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('italic')}>
+                  Italique
+                </button>
+                <button type="button" className="toolbar-button" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('underline')}>
+                  Souligné
+                </button>
+                <button
+                  type="button"
+                  className="toolbar-button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => applyFormat('insertUnorderedList')}
+                >
+                  Liste
+                </button>
+              </div>
+              <div
+                id="chat-input"
+                ref={editorRef}
+                className="composer-editor"
+                contentEditable
+                role="textbox"
+                aria-multiline="true"
+                aria-labelledby="chat-input-label"
+                data-placeholder="Écris ta demande ici..."
+                data-empty={prompt.trim().length === 0}
+                suppressContentEditableWarning
+                onInput={syncPromptFromEditor}
+                onKeyDown={(event) => {
+                  if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                    event.preventDefault();
+
+                    if (canSend) {
+                      sendMessage(prompt);
+                    }
+                  }
+                }}
+              />
+            </div>
             <button type="submit" className="send-button" disabled={!canSend}>
               Envoyer
             </button>
