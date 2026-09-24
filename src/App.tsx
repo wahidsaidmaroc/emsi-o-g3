@@ -38,7 +38,7 @@ function getTimeLabel() {
   return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function createAssistantReply(input: string) {
+export function createAssistantReply(input: string) {
   const cleaned = input.trim();
   if (!cleaned) {
     return 'Pose-moi une demande précise et je te répondrai avec une structure claire.';
